@@ -40,7 +40,8 @@ LINE_STATUS Http_request::parse_line(char *buffer, int &check_index, int &read_i
         }
     }
     //如果所有内容都分析完毕也没遇到'\r'字符，返回LINE_OPEN,表示还需要继续读取客户数据
-    return LINE_OPEN;
+    buffer[check_index++] = '\0';
+    return LINE_OK;
 }
 HTTP_CODE Http_request::parse_requestline(const char *temp, CHECK_STATE &checkstate)
 {
@@ -69,7 +70,13 @@ HTTP_CODE Http_request::parse_requestline(const char *temp, CHECK_STATE &checkst
         }
         else
         {
-            http_infos.file_name = m[2];
+            string file = m[2];
+            if (file.find(".") == file.npos)
+            {
+                file = file + ".html";
+            }
+
+            http_infos.file_name = file;
         }
 
         checkstate = CHECK_STATE_HEADER;
@@ -87,6 +94,13 @@ HTTP_CODE Http_request::parse_requestline(const char *temp, CHECK_STATE &checkst
 HTTP_CODE Http_request::parse_headline(const char *temp, CHECK_STATE &checkstate)
 {
     string headline = string(temp);
+    if (headline == "")
+    {
+        //HTTP请求头部处理完毕，状态转移到请求体字段分析
+        checkstate = CHECK_STATE_BODY;
+        return NO_REQUEST;
+    }
+
     regex r("^([^:]*): ?(.*)$");
     std::smatch m;
     if (regex_match(headline, m, r))
@@ -94,14 +108,14 @@ HTTP_CODE Http_request::parse_headline(const char *temp, CHECK_STATE &checkstate
         http_infos.head_state[m[1]] = m[2];
         return NO_REQUEST;
     }
-    //HTTP请求头部处理完毕，状态转移到请求体字段分析
-    checkstate = CHECK_STATE_BODY;
+
+    //checkstate = CHECK_STATE_BODY;
     return BAD_REQUEST;
 }
 HTTP_CODE Http_request::parse_bodyline(const char *temp)
 {
     string bodyline = string(temp);
-    regex r("^username=(.*)&&password=(.*)$");
+    regex r("^username=(.*)&password=(.*)$");
     std::smatch m;
     if (regex_match(bodyline, m, r))
     {
@@ -120,6 +134,7 @@ HTTP_CODE Http_request::parse_content(char *buffer, int &checked_index, CHECK_ST
     {
         char *temp = buffer + start_line; //start_line是行在buffer中的启始位置
         start_line = checked_index;       //记录下一行启始位置
+
         //checkstate记录主状态机当前的状态
         switch (checkstate)
         {
@@ -134,6 +149,7 @@ HTTP_CODE Http_request::parse_content(char *buffer, int &checked_index, CHECK_ST
         }
         case CHECK_STATE_HEADER:
         {
+
             retcode = parse_headline(temp, checkstate);
             if (retcode == BAD_REQUEST)
             {

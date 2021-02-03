@@ -4,7 +4,7 @@
 class Epoller
 {
 public:
-    Epoller(int max_events = 1024);
+    Epoller(int max_events = 10000);
     ~Epoller();
     void add_fd(int &fd, uint32_t &event);
     void mod_fd(int &fd, uint32_t &event);

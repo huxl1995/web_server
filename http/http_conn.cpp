@@ -5,6 +5,7 @@
 Http_conn::Http_conn()
 {
     read_buf = new char[BUFFER_SIZE];
+    memset(read_buf, '\0', BUFFER_SIZE);
 }
 Http_conn::~Http_conn()
 {
@@ -35,12 +36,17 @@ void Http_conn::init(const int sockfd)
 ssize_t Http_conn::read_data()
 {
     ssize_t len = -1;
+    //memset(read_buf, '\0', sizeof(read_buf));
     len = read(fd_, read_buf, BUFFER_SIZE);
+    //printf(read_buf);
+    //printf("\n");
     return len;
 }
 
 void Http_conn::process()
 {
+    //m_.lock();、
+    //reset();
     read_data();
     request.parse(read_buf);
     Http_infos hi = request.get_http_infos();
@@ -48,6 +54,8 @@ void Http_conn::process()
     response.process();
     response.make_response(iv, iv_count);
     write();
+    reset();
+    //m_.unlock();
 }
 
 ssize_t Http_conn::write() const
@@ -65,7 +73,7 @@ void Http_conn::closes()
 
 void Http_conn::reset()
 {
-    memset(read_buf, '\0', sizeof(read_buf));
+    memset(read_buf, '\0', BUFFER_SIZE * sizeof(char));
     memset(iv, 0, sizeof(iv));
     iv_count = 0;
 }

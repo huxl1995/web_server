@@ -4,12 +4,14 @@
 #include <sys/epoll.h>
 #include <functional>
 #include <unistd.h>
+
 void Web_server::init(sockaddr_in &addr)
 {
-    tp_ = new ThreadPool(1);
+    tp_ = new ThreadPool(4);
     addr_ = addr_;
     //epollfd_ = epoll_create(5);
     sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
+    //set_noblocking_fd(sockfd_);
     bind(sockfd_, (struct sockaddr *)&addr, sizeof(addr));
     assert(sockfd_ > 0);
     int ret = listen(sockfd_, 5);
@@ -35,11 +37,14 @@ void Web_server::run()
             if (fd == sockfd_)
             {
                 int connfd = accept(fd, NULL, NULL);
-                uint32_t connfd_event = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
-                add_fd(connfd, connfd_event);
-                //Http_conn hc;
+                if (event == EPOLLIN)
+                {
+                    uint32_t connfd_event = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
+                    add_fd(connfd, connfd_event);
+                    //Http_conn hc;
 
-                hcs[connfd] = new Http_conn;
+                    hcs[connfd] = new Http_conn;
+                }
             }
             else
             {
@@ -48,13 +53,17 @@ void Web_server::run()
                     //hc.init(fd);
                     hcs[fd]->init(fd);
                     auto task = std::bind(&Http_conn::process, hcs[fd]);
-                    task();
+                    //task();
                     tp_->add(std::function<void()>(task));
                 }
-                else
+                else if (event == EPOLLHUP || event == EPOLLRDHUP)
                 {
                     close(fd);
                     epoller.del_fd(fd);
+                }
+                else
+                {
+                    /* code */
                 }
             }
         }

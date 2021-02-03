@@ -4,11 +4,13 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <string>
+#include "../pool/mysql_pool.h"
 //#include "../buffer/buffer.h"
 #include "http_infos.h"
 class Http_response
 {
 public:
+    Http_response();
     void init(Http_infos &http_infos);
     void process();
 
@@ -23,8 +25,9 @@ private:
     int code;
     struct stat mystat;
     static const std::unordered_map<int, std::string> CODE_STATUS;
-    std::string source = "./source";
+    std::string source = "./sources";
     char *mm_file;
     struct stat mm_file_stat;
+    Mysql_conn_pool *mcp;
 };
 #endif

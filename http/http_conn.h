@@ -3,6 +3,7 @@
 
 #include <arpa/inet.h>
 #include <sys/uio.h>
+#include <mutex>
 #include "./http_request.h"
 #include "./http_response.h"
 
@@ -24,7 +25,7 @@ private:
 
     void reset();
     void closes();
-
+    std::mutex m_;
     int fd_;
     sockaddr_in addr_;
     bool isclose_;

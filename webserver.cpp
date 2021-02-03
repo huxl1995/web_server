@@ -16,15 +16,16 @@
 #include <functional>
 #include <vector>
 #include <iostream>
+#include "pool/mysql_pool.h"
 #include "./http/http_conn.h"
 #include "./pool/threadPool.h"
 #include "./server/server.h"
 using namespace std;
 #define PORT 8080
 #define LISTENQ 5
-#define MYSQL_NAME "root"
-#define MYSQL_PASSWORD "0"
-#define TABLE_NAME "userinfo"
+#define MYSQL_NAME "root"     //数据库账户名
+#define MYSQL_PASSWORD "0"    //数据库密码
+#define TABLE_NAME "userinfo" //数据库名（其中需要包含一个名为userinfo的表）
 //相应报文头
 
 int main()
@@ -41,6 +42,8 @@ int main()
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY); //服务器地址为本机任意网卡
     servaddr.sin_port = htons(PORT);
 
+    Mysql_conn_pool *mcp = Mysql_conn_pool::instance();
+    mcp->init("localhost", 3306, MYSQL_NAME, MYSQL_PASSWORD, TABLE_NAME, 1024);
     Web_server wb;
     wb.init(servaddr);
     wb.run();
