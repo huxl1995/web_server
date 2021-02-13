@@ -6,6 +6,8 @@
 
 *利用单例模式实现数据库连接池，增加登录注册功能
 
+*增加基于最小堆实现的时间堆，处理超时连接
+
 #环境要求
 *Linux
 *C++11
@@ -32,7 +34,6 @@
 │   ├── mysql_pool.cpp
 │   ├── mysql_pool.h
 │   ├── taskQueue.h
-│   ├── threadpool.h
 │   └── threadPool.h
 ├── readme.md
 ├── server
@@ -41,6 +42,7 @@
 ├── sources
 │   ├── 404.html
 │   ├── error.html
+│   ├── favicon.ico
 │   ├── index.html
 │   ├── login_failure.html
 │   ├── login.html
@@ -51,6 +53,9 @@
 │   ├── register_success.html
 │   ├── video.html
 │   └── video.mp4
+├── timer
+│   ├── time_heap.cpp
+│   └── time_heap.h
 └── webserver.cpp
 
 
