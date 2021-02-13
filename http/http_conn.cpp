@@ -46,15 +46,16 @@ ssize_t Http_conn::read_data()
 void Http_conn::process()
 {
     //m_.lock();、
-    //reset();
+    reset();
     read_data();
     request.parse(read_buf);
-    Http_infos hi = request.get_http_infos();
-    response.init(hi);
+    http_infos = request.get_http_infos();
+    response.init(http_infos);
     response.process();
     response.make_response(iv, iv_count);
-    write();
-    reset();
+
+    //write();
+    //reset();
     //m_.unlock();
 }
 
@@ -76,4 +77,10 @@ void Http_conn::reset()
     memset(read_buf, '\0', BUFFER_SIZE * sizeof(char));
     memset(iv, 0, sizeof(iv));
     iv_count = 0;
+    http_infos.method = Http_infos::METHOD::GET;
+    http_infos.file_name = "";
+    http_infos.head_state.clear();
+    http_infos.password = "";
+    http_infos.username = "";
+    request.reset();
 }

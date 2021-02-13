@@ -29,5 +29,6 @@ private:
     char *mm_file;
     struct stat mm_file_stat;
     Mysql_conn_pool *mcp;
+    //std::unordered_map<int, std::string> status_code;
 };
 #endif

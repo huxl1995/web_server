@@ -34,15 +34,16 @@ enum HTTP_CODE
 class Http_request
 {
 public:
-    void parse( char *read_buf);
-    Http_infos get_http_infos();
+    void parse(char *read_buf);
+    Http_infos get_http_infos() const;
+    void reset();
 
 private:
-    LINE_STATUS parse_line( char *buffer, int &check_index, int &read_index);
+    LINE_STATUS parse_line(char *buffer, int &check_index, int &read_index);
     HTTP_CODE parse_requestline(const char *temp, CHECK_STATE &checkstate);
     HTTP_CODE parse_headline(const char *temp, CHECK_STATE &checkstate);
     HTTP_CODE parse_bodyline(const char *temp);
-    HTTP_CODE parse_content( char *buffer, int &checked_index, CHECK_STATE &checkstate, int &read_index, int &start_line);
+    HTTP_CODE parse_content(char *buffer, int &checked_index, CHECK_STATE &checkstate, int &read_index, int &start_line);
     Http_infos http_infos;
 };
 #endif // !HTTP_REQUEST_H

@@ -198,7 +198,15 @@ void Http_request::parse(char *read_buf)
     int startline = 0;
     parse_content(read_buf, checked_index, check_state, read_index, startline);
 }
-Http_infos Http_request::get_http_infos()
+Http_infos Http_request::get_http_infos() const
 {
     return http_infos;
+}
+void Http_request::reset()
+{
+    http_infos.file_name = "";
+    http_infos.head_state.clear();
+    http_infos.password = "";
+    http_infos.username = "";
+    http_infos.method = Http_infos::METHOD::GET;
 }

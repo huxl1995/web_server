@@ -45,6 +45,7 @@ void Http_response::open_file(string &file_name)
         code = 200;
     }
     int file_fd = open((source + file_name).data(), O_RDONLY);
+    //mm_file = new char[mystat.st_size];
     mm_file = new char[mystat.st_size + 1];
     memset(mm_file, '\0', sizeof(mm_file));
     int len = read(file_fd, mm_file, mystat.st_size);
@@ -122,7 +123,7 @@ void Http_response::make_response(iovec *iv, int &iv_count)
 {
     string status;
     status = CODE_STATUS.find(code)->second;
-    string temp = "HTTP/1.1 " + to_string(code) + "\r\n";
+    string temp = "HTTP/1.1 " + to_string(code) + " " + status + "\r\n";
     temp = temp + "Content-Length: " + to_string(mystat.st_size) + "\r\n\r\n";
     char head[1024];
     memset(head, '\0', sizeof(head));

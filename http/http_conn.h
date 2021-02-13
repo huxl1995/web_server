@@ -13,16 +13,15 @@ public:
     Http_conn();
     ~Http_conn();
     void init(const int sockfd);
+    void init(const int sockfd, const sockaddr_in &addr);
     void process();
     //void run(const int sockfd, const sockaddr_in &addr);
     void run(const int sockfd);
+    ssize_t write() const;
+    Http_infos http_infos;
 
 private:
-    void init(const int sockfd, const sockaddr_in &addr);
-
     ssize_t read_data();
-    ssize_t write() const;
-
     void reset();
     void closes();
     std::mutex m_;
@@ -32,6 +31,7 @@ private:
     char *read_buf;
     struct iovec iv[2];
     int iv_count;
+
     Http_request request;
     Http_response response;
 };

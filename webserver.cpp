@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 //#include <mutex>
 //#include <atomic>
 #include <string>
@@ -27,7 +28,17 @@ using namespace std;
 #define MYSQL_PASSWORD "0"    //数据库密码
 #define TABLE_NAME "userinfo" //数据库名（其中需要包含一个名为userinfo的表）
 //相应报文头
-
+void close_web(Web_server &wb, int sig)
+{
+    wb.isclose = true;
+}
+void add_sig(int sig, void (*handle)(int))
+{
+    struct sigaction sa;
+    memset(&sa, '\0', sizeof(sa));
+    sa.sa_handler = handle;
+    sa.sa_flags = sig;
+}
 int main()
 {
 
