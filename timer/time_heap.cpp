@@ -66,6 +66,7 @@ void Timer_heap::add_timer(Timer *timer)
             break;
         }
         array[hole] = array[parent];
+        array[hole]->index = hole;
     }
     timer->index = hole;
     array[hole] = timer;
@@ -143,6 +144,7 @@ void Timer_heap::percolate_down(int hole)
     int child = 0;
     for (; (hole * 2 + 1) <= (cur_size - 1); hole = child)
     {
+        child = hole * 2 + 1;
         if (child < (cur_size - 1) && array[child + 1]->expire < array[child]->expire)
         {
             ++child;
