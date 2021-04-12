@@ -17,8 +17,11 @@ public:
     void process();
     //void run(const int sockfd, const sockaddr_in &addr);
     void run(const int sockfd);
-    ssize_t write() const;
+    ssize_t write_();
     Http_infos http_infos;
+    void read_test();
+    void write_test();
+    void init_test(const int sockfd);
 
 private:
     ssize_t read_data();
@@ -28,9 +31,7 @@ private:
     int fd_;
     sockaddr_in addr_;
     bool isclose_;
-    char *read_buf;
-    struct iovec iv[2];
-    int iv_count;
+    char read_buf[BUFFER_SIZE];
 
     Http_request request;
     Http_response response;

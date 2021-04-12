@@ -11,24 +11,31 @@ class Http_response
 {
 public:
     Http_response();
-    void init(Http_infos &http_infos);
+    ~Http_response();
+    void init(Http_infos &http_infos, int connfd_);
     void process();
-
     void make_response(iovec *iv, int &iv_count);
+    void make_response();
+    void write_response();
 
 private:
     void process_GET();
     void process_POST();
     void process_error();
     void open_file(std::string &file_name);
+    void unmap();
+    int connfd;
     Http_infos http_infos_;
     int code;
-    struct stat mystat;
     static const std::unordered_map<int, std::string> CODE_STATUS;
-    std::string source = "./sources";
-    char *mm_file;
-    struct stat mm_file_stat;
     Mysql_conn_pool *mcp;
-    //std::unordered_map<int, std::string> status_code;
+
+private:
+    std::string source = "./sources";
+    char head[1024];
+    char *mm_file;
+    struct stat mystat;
+    struct iovec iv[2];
+    int ivcount;
 };
 #endif

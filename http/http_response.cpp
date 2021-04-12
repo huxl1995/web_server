@@ -13,10 +13,13 @@ Http_response::Http_response()
 {
     mcp = Mysql_conn_pool::instance();
 }
-
-void Http_response::init(Http_infos &http_infos)
+Http_response::~Http_response()
+{
+}
+void Http_response::init(Http_infos &http_infos, int connfd_)
 {
     http_infos_ = http_infos;
+    connfd = connfd_;
 }
 void Http_response::process()
 {
@@ -45,10 +48,7 @@ void Http_response::open_file(string &file_name)
         code = 200;
     }
     int file_fd = open((source + file_name).data(), O_RDONLY);
-    //mm_file = new char[mystat.st_size];
-    mm_file = new char[mystat.st_size + 1];
-    memset(mm_file, '\0', sizeof(mm_file));
-    int len = read(file_fd, mm_file, mystat.st_size);
+    mm_file = (char *)mmap(0, mystat.st_size, PROT_READ, MAP_PRIVATE, file_fd, 0);
     close(file_fd);
 }
 void Http_response::process_GET()
@@ -58,7 +58,7 @@ void Http_response::process_GET()
 void Http_response::process_POST()
 {
     MYSQL *mysql = mcp->get_conn();
-    MYSQL_FIELD *mysql_field;
+    //MYSQL_FIELD *mysql_field;
     MYSQL_RES *mysql_res;
     MYSQL_ROW mysql_row;
     string username = http_infos_.username;
@@ -78,7 +78,7 @@ void Http_response::process_POST()
         {
             mysql_res = mysql_store_result(mysql);
 
-            if (mysql_row = mysql_fetch_row(mysql_res))
+            if ((mysql_row = mysql_fetch_row(mysql_res)))
             {
                 if (mysql_row[0] == password)
                 {
@@ -133,4 +133,51 @@ void Http_response::make_response(iovec *iv, int &iv_count)
     iv[1].iov_base = mm_file;
     iv[1].iov_len = mystat.st_size;
     iv_count = 2;
+}
+void Http_response::make_response()
+{
+    string status = CODE_STATUS.find(code)->second;
+    string heads = "HTTP/1.1 " + to_string(code) + " " + status + "\r\n";
+    heads = heads + "Content-Length: " + to_string(mystat.st_size) + "\r\n\r\n";
+    iv[0].iov_len = snprintf(head, 1024, "%s", heads.data());
+    iv[0].iov_base = head;
+    //iv[0].iov_len = strlen(head);
+    iv[1].iov_base = mm_file;
+    iv[1].iov_len = mystat.st_size;
+    ivcount = 2;
+}
+void Http_response::write_response()
+{
+
+    writev(connfd, iv, ivcount);
+    // while (temp = writev(connfd, iv, ivcount))
+    // {
+    //     printf("%s,\n", temp);
+    //     if (temp >= (iv[0].iov_len + iv[1].iov_len))
+    //     {
+    //         break;
+    //     }
+
+    //     if (temp >= iv[0].iov_len)
+    //     {
+    //         iv[1].iov_base = (uint8_t *)iv[1].iov_base + (temp - iv[0].iov_len);
+    //         iv[1].iov_len -= (temp - iv[0].iov_len);
+    //     }
+    //     else
+    //     {
+    //         iv[0].iov_base = (uint8_t *)iv[0].iov_base + temp;
+    //         iv[0].iov_len -= temp;
+    //     }
+    // }
+
+    unmap();
+}
+
+void Http_response::unmap()
+{
+    if (mm_file)
+    {
+        munmap(mm_file, mystat.st_size);
+        mm_file = 0;
+    }
 }

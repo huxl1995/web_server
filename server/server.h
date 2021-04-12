@@ -22,15 +22,22 @@ private:
     void add_fd(int &fd, uint32_t &events);
     int set_noblocking_fd(int &fd);
     sockaddr_in addr_;
+
+private:
+    void reset_oneshot_write(int fd);
+    void reset_oneshot_read(int fd);
     int epollfd_;
+    epoll_event events[MAX_EVENTS];
     uint32_t listen_event;
     uint32_t connfd_event;
     Epoller epoller;
+
+private:
     int sockfd_;
     ThreadPool *tp_;
     Timer_heap *timer_heap_;
     //Http_conn hc;
     std::unordered_map<int, Timer *> timers;
-    std::unordered_map<int, Http_conn *> users;
+    std::unordered_map<int, Http_conn> users;
     //std::unordered_map<int, Timer *> times;
 };

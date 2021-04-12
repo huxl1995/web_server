@@ -8,8 +8,8 @@ struct Http_infos
         POST
     } method;
     std::unordered_map<std::string, std::string> head_state;
-    std::string file_name = "";
-    std::string username = "";
-    std::string password = "";
+    std::string file_name;
+    std::string username;
+    std::string password;
 };
 #endif
