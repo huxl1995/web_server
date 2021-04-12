@@ -51,19 +51,16 @@ void Http_conn::process()
     http_infos = request.get_http_infos();
     response.init(http_infos, fd_);
     response.process();
-    //response.make_response(iv, iv_count);
+
     response.make_response();
-    //write();
-    //reset();
-    //m_.unlock();
+
     return;
 }
 
 ssize_t Http_conn::write_()
 {
     response.write_response();
-    //ssize_t len = -1;
-    //len = writev(fd_, iv, iv_count);
+
     return 0;
 }
 
@@ -75,13 +72,7 @@ void Http_conn::closes()
 
 void Http_conn::reset()
 {
-    // if (read_buf)
-    // {
-    //     memset(read_buf, '\0', sizeof(read_buf));
-    // }
 
-    //memset(iv, 0, sizeof(iv));
-    //iv_count = 0;
     http_infos.method = Http_infos::METHOD::GET;
     http_infos.file_name = "";
     http_infos.head_state.clear();
@@ -98,8 +89,6 @@ void Http_conn::read_test()
     char readbuf[BUFFER_SIZE];
     memset(readbuf, 0, BUFFER_SIZE);
     read(fd_, readbuf, BUFFER_SIZE);
-    //printf("%s\n", readbuf);
-    //delete[] readbuf;
 }
 void Http_conn::write_test()
 {
@@ -107,6 +96,4 @@ void Http_conn::write_test()
     memset(writebuf, 0, BUFFER_SIZE);
     sprintf(writebuf, "%s\n", "helloword");
     write(fd_, writebuf, BUFFER_SIZE);
-    // printf("%s\n", "write over");
-    //delete[] writebuf;
 }

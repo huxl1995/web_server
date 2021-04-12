@@ -27,20 +27,16 @@ void Web_server::del(int &fd)
 }
 void Web_server::run()
 {
-    //uint32_t sockfd_event = EPOLLIN;
-    //add_fd(sockfd_, sockfd_event);
-    //epoll_event *events = new epoll_event[MAX_EVENTS];
+
     while (1)
     {
-        //timer_heap_->tick();
+        timer_heap_->tick();
         //printf("before wait\n");
         int ret = epoller.wait();
-        //int ret = epoll_wait(epollfd_, events, MAX_EVENTS, -1);
-        //printf("after wait\n");
+
         for (int i = 0; i < ret; i++)
         {
             epoll_event *ev = epoller.get_epoll_event(i);
-            //epoll_event ev = events[i];
             int fd = ev->data.fd;
             uint32_t event = ev->events;
             if (fd == sockfd_)
@@ -65,6 +61,7 @@ void Web_server::run()
                 //printf("EPOLLOUT:%d\n", fd);
                 auto task = std::bind(&Web_server::deal_write, this, fd);
                 //task();
+
                 tp_->add(std::function<void()>(task));
             }
         }
@@ -108,9 +105,9 @@ void Web_server::deal_listen()
     uint32_t events = connfd_event | EPOLLIN;
     add_fd(connfd, events);
     //
-    // timers[connfd] = new Timer(5);
-    // timers[connfd]->cb_func = function<void()>(bind(&Web_server::close_, this, connfd));
-    // timer_heap_->add_timer(timers[connfd]);
+    timers[connfd] = new Timer(5);
+    //timers[connfd]->cb_func = function<void()>(bind(&Web_server::close_, this, connfd));
+    timer_heap_->add_timer(timers[connfd]);
 }
 void Web_server::deal_read(int fd)
 {
@@ -118,52 +115,39 @@ void Web_server::deal_read(int fd)
     reset_oneshot_write(fd);
     //epoller.mod_fd(fd, events);
     //
-    // if (users[fd].http_infos.head_state.find("Connection") != users[fd].http_infos.head_state.end() && users[fd].http_infos.head_state["Connection"] == "keep-alive")
-    // {
-    //     timers[fd]->expire = time(NULL) + 5;
-    //     timer_heap_->adjust(timers[fd]);
-    // }
-    // else
-    // {
-    //     timers[fd]->expire = time(NULL);
-    //     timer_heap_->adjust(timers[fd]);
-    // }
+    if (users[fd].http_infos.head_state.find("Connection") != users[fd].http_infos.head_state.end() && users[fd].http_infos.head_state["Connection"] == "keep-alive")
+    {
+        timers[fd]->expire = time(NULL) + 5;
+        timer_heap_->adjust(timers[fd]);
+    }
+    else
+    {
+        timers[fd]->expire = time(NULL);
+        timer_heap_->adjust(timers[fd]);
+    }
 }
 void Web_server::deal_write(int fd)
 {
     users[fd].write_();
     //close_(fd);
     reset_oneshot_read(fd);
-    // uint32_t events = connfd_event | EPOLLIN;
-
-    // epoller.mod_fd(fd, events);
-    //close_(fd);
 }
 void Web_server::close_(int fd)
 {
-    //printf("main colse fd :%d,%d\n", fd, time(NULL));
+
     close(fd);
-    // epoll_event ev = {0};
-    // epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &ev);
+
     epoller.del_fd(fd);
-    //delete users[fd];
+    timers[fd]->cb_func = NULL;
     users.erase(fd);
 }
 void Web_server::reset_oneshot_read(int fd)
 {
     uint32_t ev = connfd_event | EPOLLIN;
     epoller.mod_fd(fd, ev);
-    // epoll_event event;
-    // event.data.fd = fd;
-    // event.events = ev;
-    // epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &event);
 }
 void Web_server::reset_oneshot_write(int fd)
 {
     uint32_t ev = connfd_event | EPOLLOUT;
     epoller.mod_fd(fd, ev);
-    //epoll_event event;
-    //event.data.fd = fd;
-    // event.events = ev;
-    // epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &event);
 }

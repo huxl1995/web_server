@@ -58,7 +58,7 @@ void Http_response::process_GET()
 void Http_response::process_POST()
 {
     MYSQL *mysql = mcp->get_conn();
-    //MYSQL_FIELD *mysql_field;
+
     MYSQL_RES *mysql_res;
     MYSQL_ROW mysql_row;
     string username = http_infos_.username;
@@ -141,7 +141,6 @@ void Http_response::make_response()
     heads = heads + "Content-Length: " + to_string(mystat.st_size) + "\r\n\r\n";
     iv[0].iov_len = snprintf(head, 1024, "%s", heads.data());
     iv[0].iov_base = head;
-    //iv[0].iov_len = strlen(head);
     iv[1].iov_base = mm_file;
     iv[1].iov_len = mystat.st_size;
     ivcount = 2;
@@ -150,25 +149,6 @@ void Http_response::write_response()
 {
 
     writev(connfd, iv, ivcount);
-    // while (temp = writev(connfd, iv, ivcount))
-    // {
-    //     printf("%s,\n", temp);
-    //     if (temp >= (iv[0].iov_len + iv[1].iov_len))
-    //     {
-    //         break;
-    //     }
-
-    //     if (temp >= iv[0].iov_len)
-    //     {
-    //         iv[1].iov_base = (uint8_t *)iv[1].iov_base + (temp - iv[0].iov_len);
-    //         iv[1].iov_len -= (temp - iv[0].iov_len);
-    //     }
-    //     else
-    //     {
-    //         iv[0].iov_base = (uint8_t *)iv[0].iov_base + temp;
-    //         iv[0].iov_len -= temp;
-    //     }
-    // }
 
     unmap();
 }
