@@ -17,6 +17,7 @@
 #include <functional>
 #include <vector>
 #include <iostream>
+#include<filesystem>
 #include "pool/mysql_pool.h"
 #include "./http/http_conn.h"
 #include "./pool/threadPool.h"
@@ -24,28 +25,19 @@
 using namespace std;
 #define PORT 8080
 #define LISTENQ 5
-#define MYSQL_NAME "root"     //数据库账户名
+#define MYSQL_NAME "test"     //数据库账户名
 #define MYSQL_PASSWORD "0"    //数据库密码
 #define TABLE_NAME "userinfo" //数据库名（其中需要包含一个名为userinfo的表）
-//相应报文头
-void close_web(Web_server &wb, int sig)
+int main(int argc,char* argv[])
 {
-    wb.isclose = true;
-}
-void add_sig(int sig, void (*handle)(int))
-{
-    struct sigaction sa;
-    memset(&sa, '\0', sizeof(sa));
-    sa.sa_handler = handle;
-    sa.sa_flags = sig;
-}
-int main()
-{
-
-    //int listenfd, connfd;
-
+    if(argc!=3)
+    {
+        cout<<"参数数量错误"<<endl;
+        return 1;
+    }
+    string source=string(argv[1]);
+    int threads=atoi(argv[2]);
     sockaddr_in servaddr;
-
     //准备地址端口信息
     //常量 INADDR_ANY 表示任意网卡，位于netinet/in.h
     bzero(&servaddr, sizeof(servaddr));           //将servaddr前x位设置为0
@@ -55,8 +47,8 @@ int main()
 
     Mysql_conn_pool *mcp = Mysql_conn_pool::instance();
     mcp->init("localhost", 3306, MYSQL_NAME, MYSQL_PASSWORD, TABLE_NAME, 1024);
-    Web_server wb;
-    wb.init(servaddr);
+    Web_server wb(source);
+    wb.init(servaddr,threads);
     wb.run();
 
     return 0;

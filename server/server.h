@@ -5,14 +5,28 @@
 #include "../pool/threadPool.h"
 #include "../timer/time_heap.h"
 #include <sys/socket.h>
+#include<unistd.h>
+#include<iostream>
 #define MAX_EVENTS 65535
 class Web_server
 {
 public:
-    void init(sockaddr_in &addr);
+    Web_server(std::string sources):sources_(sources){}
+    ~Web_server()
+    {
+        tp_->close();
+        for(auto& pair:timers)
+        {   
+            delete pair.second;
+        }
+        delete timer_heap_;
+        delete tp_;
+    }
+    void init(sockaddr_in &addr,int threads_num);
     void run();
     void del(int &fd);
-    bool isclose;
+    static bool is_stop;
+    static void stop(int sig);
 
 private:
     void deal_listen();
@@ -26,6 +40,7 @@ private:
 private:
     void reset_oneshot_write(int fd);
     void reset_oneshot_read(int fd);
+    void reset_oneshot(int fd);
     int epollfd_;
     epoll_event events[MAX_EVENTS];
     uint32_t listen_event;
@@ -36,8 +51,8 @@ private:
     int sockfd_;
     ThreadPool *tp_;
     Timer_heap *timer_heap_;
-    //Http_conn hc;
     std::unordered_map<int, Timer *> timers;
     std::unordered_map<int, Http_conn> users;
-    //std::unordered_map<int, Timer *> times;
+    std::string sources_;
+    std::mutex mtx;
 };

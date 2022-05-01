@@ -123,7 +123,7 @@ void Timer_heap::tick()
             break;
         }
         //否则就执行堆定定时器中的任务
-        if (array[0]->cb_func)
+        if (array[0]->cb_func!=NULL)
         {
             //printf("time close %d\n", time(NULL));
             array[0]->cb_func();

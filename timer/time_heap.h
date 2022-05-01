@@ -7,14 +7,13 @@ struct Client_data;
 class Timer //定时器类
 {
 public:
-    Timer(int delay)
+    inline void init(int delay)
     {
-        expire = time(NULL) + delay;
-        index = 0;
+        expire=time(NULL)+delay;
+        index=0;
     }
     int index;     //定时器在时间堆数组中的index
     time_t expire; //定时器生效的绝对时间
-    //void (*cb_func)(Client_data *);
     std::function<void()> cb_func; //定时器回调函数
     //Client_data *user_data; //用户数据
 };

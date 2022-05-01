@@ -69,3 +69,7 @@
 make
 ./bin/web
 、、、、
+
+、、、、
+更新压测结果
+![Image text](%E5%8E%8B%E6%B5%8B%E6%88%AA%E5%9B%BE.png)
